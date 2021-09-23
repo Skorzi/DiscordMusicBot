@@ -51,7 +51,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable='D:/Python/ffmpeg/bin/ffmpeg.exe', before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"), data=data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable='ffmpeg/bin/ffmpeg.exe', before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"), data=data)
 
 #зашел вышел бот
 @bot.event
@@ -102,7 +102,7 @@ async def leave(ctx):
 #music
 @bot.command()
 async def lift(ctx):
-	source = discord.FFmpegPCMAudio(executable='D:/Python/ffmpeg/bin/ffmpeg.exe', source='D:/Python/music/elevator.WEBM')
+	source = discord.FFmpegPCMAudio(executable='ffmpeg/bin/ffmpeg.exe', source='D:/Python/music/elevator.WEBM')
 	ctx.voice_client.play(source, after=None)
 
 @bot.command()
