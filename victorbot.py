@@ -51,7 +51,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable='ffmpeg/bin/ffmpeg.exe', before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"), data=data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable='D:/Users/Skorz/секретные разработки Danil entertainment/DiscordMusicBot/ffmpeg/bin/ffmpeg.exe', before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"), data=data)
 
 #зашел вышел бот
 @bot.event
