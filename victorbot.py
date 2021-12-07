@@ -14,7 +14,7 @@ ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
-    'noplaylist': True,
+    'noplaylist': False,
     'nocheckcertificate': True,
     'ignoreerrors': False,
     'logtostderr': False,
@@ -66,7 +66,7 @@ async def on_disconnect():
 # реакция на сообщения
 @bot.event
 async def on_message(message):
-	priv = ['Hello', 'Hi', 'Privet', 'Привет', 'Прив']
+	priv = ['Hello', 'Hi', 'Privet', 'Привет', 'Прив', "Здарова"]
 	if message.content.title() in priv:
 		await message.channel.send('епт,здаров')
 	print('message from {0.author}:{0.content}'.format(message))
@@ -105,13 +105,49 @@ async def lift(ctx):
 	source = discord.FFmpegPCMAudio(executable='ffmpeg/bin/ffmpeg.exe', source='D:/Python/music/elevator.WEBM')
 	ctx.voice_client.play(source, after=None)
 
+playlist = []
 @bot.command()
 async def play(ctx, *, url):
-	async with ctx.typing():
-		player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
-		ctx.voice_client.play(player, after=None)
 
-	await ctx.send('Включаю: {}'.format(player.title))
+	def is_connected():
+		voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+		return voice_client and voice_client.is_connected()
+
+	if ctx.message.guild.voice_client.is_playing():
+		with ctx.typing():
+			player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
+			playlist.append(player.title)
+		await ctx.send('Добавил в очередь: {}'.format(player.title))
+	else:
+		with ctx.typing():
+			player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
+			playlist.append(player.title)
+			ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next_song(ctx), bot.loop))
+		await ctx.send('Включаю: {}'.format(player.title))
+
+
+async def play_next_song(ctx):
+	playlist.pop(0)
+	player = await YTDLSource.from_url(playlist[0], loop=bot.loop, stream=True)
+	ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next_song(ctx), bot.loop))
+
+
+@bot.command()
+async def skip(ctx):
+	ctx.voice_client.pause()
+	playlist.pop(0)
+	player = await YTDLSource.from_url(playlist[0], loop=bot.loop, stream=True)
+	ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next_song(ctx), bot.loop))
+
+@bot.command()
+async def list(ctx):
+	if len(playlist) > 0:
+		message = "Что будет играть?\n----------------------\n"
+		with ctx.typing():
+			for i in playlist:
+				message += str(i) + "\n----------------------\n"
+		await ctx.send(message)
+
 
 @bot.command()
 async def pause(ctx):
